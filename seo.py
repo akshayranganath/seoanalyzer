@@ -30,7 +30,7 @@ def extract_details(url, status, soup):
 		print >> sys.stderr, 'extract_details:' + str(e)
 
 def print_headers():
-	print ''''
+	print '''
 <html>
 	<head>
 		<meta charset="utf-8"/>
