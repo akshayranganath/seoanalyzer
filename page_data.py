@@ -5,7 +5,7 @@ class page_data:
 	def __init__(self, url):
 		self.url = url
 		self.status = 0
-		self.meta = []
+		self.meta = None
 		self.h1 = []
 		self.h2 = []
 		self.title = None

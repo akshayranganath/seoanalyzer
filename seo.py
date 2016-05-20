@@ -14,7 +14,12 @@ def extract_details(url, status, soup):
 	try:		
 		details.status = status
 		details.title = soup.title.get_text().strip()			
-		details.meta = [cgi.escape(str(y).strip()) for y in soup.find_all('meta')]
+		#details.meta = [cgi.escape(str(y).strip()) for y in soup.find_all('meta')]
+		for meta in soup.find_all('meta'):
+			if meta.get('name') == 'description':
+				details.meta = meta.get('content')
+		#extract only meta-description - that's the only one we're interested wrt SEO
+
 		details.h1 = [cgi.escape(y.get_text().strip()) for y in soup.find_all('h1')]		
 		details.h2 = [cgi.escape(y.get_text().strip()) for y in soup.find_all('h2')]		
 		#print details		
@@ -37,7 +42,7 @@ def print_headers():
 	</head>
 	<body>
 		<table border="1">
-			<tr><th>URL</th><th>Status</th><th>Meta Tags</th><th>Title</th><th>H1</th><th>H2</th></tr>
+			<tr><th>URL</th><th>Status</th><th>Meta Tags</th><th>Meta #</th><th>Title</th><th>Title #</title><th>H1</th><th>H2</th></tr>
 '''
 
 def print_footers():
@@ -59,12 +64,27 @@ def print_html(details):
 		print '<td>' + str(details.status) + '</td>',
 
 		print '<td>',
-		print_list(details.meta)
+		if details.meta:
+			print details.meta,
+		print '</td>',
+
+		print '<td>',
+		if details.meta and len(details.meta) > 0:
+			print str(len(details.meta)),
+		else:
+			print "0",
 		print '</td>',
 
 		print '<td>',
 		if details.title:
 			print details.title,
+		print '</td>',
+
+		print '<td>',
+		if details.title and len(details.title)>0:
+			print str(len(details.title)),
+		else:
+			print "0",
 		print '</td>',
 
 		print '<td>',
