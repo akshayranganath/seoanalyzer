@@ -8,7 +8,6 @@ import argparse
 
 current_count = 0
 
-
 def extract_details(url, status, soup):
 	details = page_data(url)
 	try:		
@@ -60,7 +59,7 @@ def parse(queue, links, domain, protocol, processed):
 		r = requests.get(link.get_url(),allow_redirects=False)
 		processed.append(link.get_url())
 		#all the rest of processing is for HTML type content only
-		if r.headers['Content-Type'].startswith('text'):
+		if r.headers['Content-Type'].startswith('text') and r.content!= None:
 			soup = BeautifulSoup(r.content, 'lxml')
 			#print_details(link.get_url(), soup)
 			extract_details(link.get_url(), r.status_code, soup)
@@ -69,25 +68,25 @@ def parse(queue, links, domain, protocol, processed):
 			try:
 				for ahref in ahrefs:			
 					ahref = ahref['href']
-					url = None
+					url = None					
 					#print 'processing: ' + ahref
-					if ahref.find(domain) == -1:					
-						if ahref.startswith('/') and ahref.startswith('//')==False:
-							url = protocol + '://' + domain + ahref													
+					if ahref.find(domain) == -1:											
+						if ahref.startswith('/') and ahref.startswith('//')==False:																			
+							url = protocol + '://' + domain + ahref																				
 						elif ahref.startswith('/') and ahref.startswith('//'+domain):
 							url = protocol +  ahref					
 						#simple links 
-						elif ahref[0]!="#" and ahref[0].isalpha():
+						elif ahref[0]!="#" and ahref[0].isalpha() and ahref.startswith('http')==False:							
 							url = protocol + '://' + domain + '/' + ahref
 					else:
 						if ahref.startswith('http://'+domain) or ahref.startswith('https://'+domain):
-							url = ahref											
-
-						depth = link.get_depth()
-						if url and depth < 5:							
-							if url not in links:								
-								links[url] = Link(url,depth+1)
-								queue.put(links[url])						
+							url = ahref																		
+					
+					depth = link.get_depth()
+					if url and depth < 5:							
+						if url not in links:								
+							links[url] = Link(url,depth+1)
+							queue.put(links[url])						
 			except KeyError as k:
 				print >> sys.stderr, k
 				pass		
@@ -133,8 +132,9 @@ if __name__ == "__main__":
 			file_handle = open(args.outfile, 'w')
 			sys.stdout = file_handle		
 		parse(queue, links, domain, protocol, processed)
-		file_handle.close()
+		if file_handle:
+			file_handle.close()
 		sys.stdout = sys.__stdout__
 	except Exception as e:
-		print >> sys.stderr, url + str(e)
+		print >> sys.stderr, str(e)
 	print 'Done.'
