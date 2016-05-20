@@ -5,6 +5,7 @@ import Queue
 from Link import Link
 from page_data import page_data
 import argparse
+import cgi
 
 current_count = 0
 
@@ -13,44 +14,73 @@ def extract_details(url, status, soup):
 	try:		
 		details.status = status
 		details.title = soup.title.get_text().strip()			
-		details.meta = [str(y).strip() for y in soup.find_all('meta')]
-		details.h1 = [y.get_text().strip() for y in soup.find_all('h1')]
-		details.h2 = [y.get_text().strip() for y in soup.find_all('h2')]		
+		details.meta = [cgi.escape(str(y).strip()) for y in soup.find_all('meta')]
+		details.h1 = [cgi.escape(y.get_text().strip()) for y in soup.find_all('h1')]		
+		details.h2 = [cgi.escape(y.get_text().strip()) for y in soup.find_all('h2')]		
 		#print details		
-		print details.json_details()
+		#print details.json_details()
+		print_html(details)
 	except Exception as e:
-		print >> sys.stderr, url + str(e)		
+		print >> sys.stderr, 'extract_details:' + str(e)
 
-def print_details(url, soup):
+def print_headers():
+	print ''''
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>SEO Parser Report</title>
+		<style>
+			body	{font-family: Helvetica, Sans-Serif;}
+			tr:nth-child(even) {background: #b8d1f3;}
+			tr:nth-child(odd) {background: #dae5f4;}
+		</style>
+	</head>
+	<body>
+		<table border="1">
+			<tr><th>URL</th><th>Status</th><th>Meta Tags</th><th>Title</th><th>H1</th><th>H2</th></tr>
+'''
+
+def print_footers():
+	print '</table></body></html>'	
+
+def print_list(objs):
+	if len(objs) == 1:
+		print objs[0],
+	else:
+		print '<ul>',
+		for obj in objs:
+			print '<li>' + obj + '</li>',
+		print '</ul>',	
+
+def print_html(details):
+	print '<tr>',
 	try:
-		print '"' + url + '",',
-		print '"' + soup.title.get_text().replace('"','\"') + '",',
+		print '<td>' + details.url + '</td>',
+		print '<td>' + str(details.status) + '</td>',
 
-		lst = soup.find_all('meta')
-		print '"',
-		if lst:
-			for obj in lst:
-				#print ">>>" + str(obj)
-				print str(obj).strip().replace('"','\\"'),
-		print '",',
+		print '<td>',
+		print_list(details.meta)
+		print '</td>',
 
-		lst = soup.find_all('h1')
-		print '"',
-		if lst:
-			for obj in lst:
-				print obj.get_text().strip().replace('"','\\"'),
-		print '",',
+		print '<td>',
+		if details.title:
+			print details.title,
+		print '</td>',
 
-		lst = soup.find_all('h2')
-		print '"',
-		if lst:
-			for obj in lst:
-				print obj.get_text().strip().replace('"','\\"'),
-		print '",',
-		
-		print 
+		print '<td>',
+		if details.h1:
+			print_list(details.h1)
+		print '</td>',
+
+		print '<td>',
+		if details.h2:
+			print_list(details.h2)
+		print '</td>',						
 	except Exception as e:
-		print >> sys.stderr, e		
+		print >> sys.stderr, 'print_html:' + str(e)
+	print '</tr>'
+
+
 	
 def parse(queue, links, domain, protocol, processed):	
 	
@@ -87,8 +117,8 @@ def parse(queue, links, domain, protocol, processed):
 						if url not in links:								
 							links[url] = Link(url,depth+1)
 							queue.put(links[url])						
-			except KeyError as k:
-				print >> sys.stderr, k
+			except KeyError as e:
+				print >> sys.stderr, 'Parse:' + str(e)
 				pass		
 
 	return				
@@ -127,14 +157,18 @@ if __name__ == "__main__":
 	queue.put(l)
 	try:
 		file_handle = None
+		file_name = 'index.html'
 		if args.outfile:
-			print 'Output will be saved to file ' + args.outfile
-			file_handle = open(args.outfile, 'w')
-			sys.stdout = file_handle		
+			file_name = args.outfile
+		print 'Output will be saved to file ' + file_name
+		file_handle = open(file_name, 'w')
+		sys.stdout = file_handle		
+		print_headers()
 		parse(queue, links, domain, protocol, processed)
+		print_footers()
 		if file_handle:
 			file_handle.close()
 		sys.stdout = sys.__stdout__
 	except Exception as e:
-		print >> sys.stderr, str(e)
+		print >> sys.stderr, 'Main:' + str(e)
 	print 'Done.'
