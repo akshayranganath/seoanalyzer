@@ -4,6 +4,7 @@ import requests
 import Queue
 from Link import Link
 from page_data import page_data
+from best_practices import check_best_practices
 import argparse
 import cgi
 
@@ -38,6 +39,8 @@ def print_headers():
 			body	{font-family: Helvetica, Sans-Serif;}
 			tr:nth-child(even) {background: #b8d1f3;}
 			tr:nth-child(odd) {background: #dae5f4;}
+			.good	{color:green;}
+			.bad	{color:red;}
 		</style>
 	</head>
 	<body>
@@ -46,7 +49,10 @@ def print_headers():
 '''
 
 def print_footers():
-	print '</table></body></html>'	
+	print '</body></html>'	
+
+def print_close_table():
+	print '</table>'
 
 def print_list(objs):
 	if len(objs) == 1:
@@ -100,7 +106,6 @@ def print_html(details):
 		print >> sys.stderr, 'print_html:' + str(e)
 	print '</tr>'
 
-
 	
 def parse(queue, links, domain, protocol, processed):	
 	
@@ -133,7 +138,7 @@ def parse(queue, links, domain, protocol, processed):
 							url = ahref																		
 					
 					depth = link.get_depth()
-					if url and depth < 5:							
+					if url and depth < 2:							
 						if url not in links:								
 							links[url] = Link(url,depth+1)
 							queue.put(links[url])						
@@ -185,6 +190,8 @@ if __name__ == "__main__":
 		sys.stdout = file_handle		
 		print_headers()
 		parse(queue, links, domain, protocol, processed)
+		print_close_table()
+		check_best_practices(domain, protocol)
 		print_footers()
 		if file_handle:
 			file_handle.close()
