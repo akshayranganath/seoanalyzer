@@ -111,7 +111,7 @@ def parse(queue, links, domain, protocol, processed):
 	
 	while queue.empty()!= True:
 		link = queue.get()			
-		r = requests.get(link.get_url(),allow_redirects=False)
+		r = requests.get(link.get_url(),allow_redirects=False,verify=False)
 		processed.append(link.get_url())
 		#all the rest of processing is for HTML type content only
 		if r.headers['Content-Type'].startswith('text') and r.content!= None:
@@ -138,7 +138,7 @@ def parse(queue, links, domain, protocol, processed):
 							url = ahref																		
 					
 					depth = link.get_depth()
-					if url and depth < 2:							
+					if url and depth < 5:							
 						if url not in links:								
 							links[url] = Link(url,depth+1)
 							queue.put(links[url])						

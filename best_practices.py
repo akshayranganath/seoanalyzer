@@ -7,7 +7,7 @@ def check_best_practices(domain, protocol):
 	
 	# check for robots.txt
 	url = protocol + '://' + domain + '/robots.txt'	
-	r = requests.get(url,allow_redirects=False)		
+	r = requests.get(url,allow_redirects=False, verify=False)	
 	if r.status_code==200:
 		print '<li class="good">Robots.txt: Found</li>',	
 	else:
@@ -15,7 +15,7 @@ def check_best_practices(domain, protocol):
 
 	# check for sitemap.xml
 	url = protocol + '://' + domain + '/sitemap.xml'	
-	r = requests.get(url,allow_redirects=False)		
+	r = requests.get(url,allow_redirects=False,verify=False)		
 	if r.status_code==200:
 		'<li class="good">sitemap.xml: Found</li>',	
 	else:
@@ -23,7 +23,7 @@ def check_best_practices(domain, protocol):
 
 	# check for sitemap.xml.gz
 	url = protocol + '://' + domain + '/sitemap.xml.gz'	
-	r = requests.get(url,allow_redirects=False)		
+	r = requests.get(url,allow_redirects=False,verify=False)		
 	if r.status_code==200:
 		'<li class="good">sitemap.xml.gz: Found</li>',	
 	else:
@@ -31,7 +31,7 @@ def check_best_practices(domain, protocol):
 
 	# check for sitemap.gz
 	url = protocol + '://' + domain + '/sitemap.gz'	
-	r = requests.get(url,allow_redirects=False)		
+	r = requests.get(url,allow_redirects=False,verify=False)		
 	if r.status_code==200:
 		'<li class="good">sitemap.xml.gz: Found</li>',	
 	else:
@@ -39,7 +39,7 @@ def check_best_practices(domain, protocol):
 
 	#fetch the home page response for the rest of analysis
 	url = protocol + '://' + domain + '/'
-	r = requests.get(url)
+	r = requests.get(url,allow_redirects=False,verify=False)
 	soup = BeautifulSoup(r.content, 'lxml')
 	
 	# check for responsive setup in <meta> tag
